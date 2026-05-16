@@ -1,6 +1,8 @@
-# fluttercosa
+# MicroProyecto_Buscaminas
 
-A new Flutter project.
+Micro Proyecto de Sistemas de informacióm, Creacion de un buscaminas en flutter usando dart.
+Carlos Padron 31.785.756
+Antonio Barriola 31.985.434
 
 ## Getting Started
 
