@@ -1,6 +1,8 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'Carga.dart';
 
 void main() => runApp(const MyApp());
 
@@ -13,7 +15,7 @@ class MyApp extends StatelessWidget {
       title: 'Buscaminas',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const VideoBackgroundScreen(),
+      home: const CargaPantalla(),
     );
   }
 }
@@ -102,64 +104,73 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                   ),
                 ),
 
-                Container(
-                  margin: const EdgeInsets.only(
-                    bottom: 50.0,
-                    left: 20.0,
-                    right: 20.0,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 22.0,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(
-                      0xFF222831,
-                    ), // Gris oscuro texturizado de fondo
-                    borderRadius: BorderRadius.circular(12.0),
-                    border: Border.all(
-                      color: const Color(
-                        0xFF11141A,
-                      ), // Borde exterior más oscuro
-                      width: 4,
+                BounceInUp(
+                  duration: const Duration(
+                    milliseconds: 900,
+                  ), //Duracion de la animacion
+                  delay: const Duration(
+                    seconds: 2,
+                  ), //TIEMPO DE APARICION DE LA ANIMACION
+                  from: 400, // altura de donde empieza la animacion
+                  child: Container(
+                    margin: const EdgeInsets.only(
+                      bottom: 50.0,
+                      left: 20.0,
+                      right: 20.0,
                     ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black54,
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 22.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(
+                        0xFF222831,
+                      ), // Gris oscuro texturizado de fondo
+                      borderRadius: BorderRadius.circular(12.0),
+                      border: Border.all(
+                        color: const Color(
+                          0xFF11141A,
+                        ), // Borde exterior más oscuro
+                        width: 4,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize
-                        .min, // Se ajusta al tamaño de los botones juntos
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      PixelButton(
-                        text: 'JUGAR',
-                        baseColor: Colors.green.shade600,
-                        onPressed: () {},
-                      ),
-                      const SizedBox(width: 12),
-                      PixelButton(
-                        text: 'CONFIGURACIÓN',
-                        baseColor: const Color.fromARGB(255, 179, 154, 113),
-                        onPressed: () {},
-                      ),
-                      const SizedBox(width: 12),
-                      PixelButton(
-                        text: 'INSTRUCCIONES',
-                        baseColor: Colors.amber.shade700,
-                        onPressed: () {},
-                      ),
-                      const SizedBox(width: 12),
-                      PixelButton(
-                        text: 'CRÉDITOS',
-                        baseColor: Colors.blue.shade700,
-                        onPressed: () {},
-                      ),
-                    ],
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black54,
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize
+                          .min, // Se ajusta al tamaño de los botones juntos
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        PixelButton(
+                          text: 'JUGAR',
+                          baseColor: Colors.green.shade600,
+                          onPressed: () {},
+                        ),
+                        const SizedBox(width: 12),
+                        PixelButton(
+                          text: 'OPCIONES',
+                          baseColor: const Color.fromARGB(255, 179, 154, 113),
+                          onPressed: () {},
+                        ),
+                        const SizedBox(width: 12),
+                        PixelButton(
+                          text: 'INSTRUCCIONES',
+                          baseColor: Colors.amber.shade700,
+                          onPressed: () {},
+                        ),
+                        const SizedBox(width: 12),
+                        PixelButton(
+                          text: 'CRÉDITOS',
+                          baseColor: Colors.blue.shade700,
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
