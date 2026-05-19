@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'Carga.dart';
-import 'botones.dart';
+import 'botones.dart'; // Tu clase de menú flotante
 
 void main() => runApp(const MyApp());
 
@@ -31,6 +31,10 @@ class VideoBackgroundScreen extends StatefulWidget {
 class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+
+  // --- VARIABLES DE ESTADO PARA LAS OPCIONES ---
+  int _volumen = 80; // Inicia en 80%
+  String _dificultad = 'MEDIO'; // Inicia en MEDIO
 
   @override
   void initState() {
@@ -106,13 +110,9 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                 ),
 
                 BounceInUp(
-                  duration: const Duration(
-                    milliseconds: 900,
-                  ), //Duracion de la animacion
-                  delay: const Duration(
-                    seconds: 2,
-                  ), //TIEMPO DE APARICION DE LA ANIMACION
-                  from: 400, // altura de donde empieza la animacion
+                  duration: const Duration(milliseconds: 900),
+                  delay: const Duration(seconds: 2),
+                  from: 400,
                   child: Container(
                     margin: const EdgeInsets.only(
                       bottom: 50.0,
@@ -124,14 +124,10 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                       vertical: 22.0,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(
-                        0xFF222831,
-                      ), // Gris oscuro texturizado de fondo
+                      color: const Color(0xFF222831),
                       borderRadius: BorderRadius.circular(12.0),
                       border: Border.all(
-                        color: const Color(
-                          0xFF11141A,
-                        ), // Borde exterior más oscuro
+                        color: const Color(0xFF11141A),
                         width: 4,
                       ),
                       boxShadow: const [
@@ -143,8 +139,7 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                       ],
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize
-                          .min, // Se ajusta al tamaño de los botones juntos
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         PixelButton(
@@ -153,22 +148,169 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                           onPressed: () {},
                         ),
                         const SizedBox(width: 12),
+
+                        // --- MENÚ OPCIONES INTERACTIVO ---
                         PixelButton(
                           text: 'OPCIONES',
                           baseColor: const Color.fromARGB(255, 179, 154, 113),
-                          onPressed: () {},
+                          onPressed: () {
+                            Botones.mostrar(
+                              context,
+                              titulo: 'OPCIONES',
+                              // El StatefulBuilder permite actualizar el estado del diálogo en tiempo real
+                              contenido: StatefulBuilder(
+                                builder:
+                                    (
+                                      BuildContext context,
+                                      StateSetter setDialogState,
+                                    ) {
+                                      // Genera dinámicamente las barras del volumen (ej: 80% = ||||||||)
+                                      String barrasVolumen =
+                                          '|' * (_volumen ~/ 10);
+
+                                      return Column(
+                                        children: [
+                                          // Control de Volumen
+                                          Text(
+                                            'VOLUMEN',
+                                            style: GoogleFonts.pressStart2p(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              _miniBotonRetro('-', () {
+                                                if (_volumen > 0) {
+                                                  setDialogState(() {
+                                                    _volumen -= 10;
+                                                  });
+                                                }
+                                              }),
+                                              const SizedBox(width: 15),
+                                              SizedBox(
+                                                width:
+                                                    160, // Ancho fijo para evitar que los botones se muevan
+                                                child: Text(
+                                                  '$barrasVolumen $_volumen%',
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                    color: Colors.greenAccent,
+                                                    fontFamily: 'Courier',
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 15),
+                                              _miniBotonRetro('+', () {
+                                                if (_volumen < 100) {
+                                                  setDialogState(() {
+                                                    _volumen += 10;
+                                                  });
+                                                }
+                                              }),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 25),
+
+                                          // Control de Dificultad
+                                          Text(
+                                            'DIFICULTAD',
+                                            style: GoogleFonts.pressStart2p(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Wrap(
+                                            spacing: 10,
+                                            runSpacing: 10,
+                                            alignment: WrapAlignment.center,
+                                            children: [
+                                              _miniBotonRetro(
+                                                'FÁCIL',
+                                                () {
+                                                  setDialogState(() {
+                                                    _dificultad = 'FÁCIL';
+                                                  });
+                                                },
+                                                activo: _dificultad == 'FÁCIL',
+                                              ),
+
+                                              _miniBotonRetro(
+                                                'MEDIO',
+                                                () {
+                                                  setDialogState(() {
+                                                    _dificultad = 'MEDIO';
+                                                  });
+                                                },
+                                                activo: _dificultad == 'MEDIO',
+                                              ),
+
+                                              _miniBotonRetro(
+                                                'DIFÍCIL',
+                                                () {
+                                                  setDialogState(() {
+                                                    _dificultad = 'DIFÍCIL';
+                                                  });
+                                                },
+                                                activo:
+                                                    _dificultad == 'DIFÍCIL',
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    },
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(width: 12),
+
                         PixelButton(
                           text: 'INSTRUCCIONES',
                           baseColor: Colors.amber.shade700,
-                          onPressed: () {},
+                          onPressed: () {
+                            Botones.mostrar(
+                              context,
+                              titulo: 'INSTRUCCIONES',
+                              contenido: const Text(
+                                'Click Izq: Descubrir casilla\nClick Der: Colocar bandera\n\n¡Evita las minas para ganar!\n\nEl juego consiste en despejar todas las casillas que no oculten una mina.\n\nLos números indican cuántas minas hay a su alrededor.',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                  height: 1.4,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(width: 12),
+
                         PixelButton(
                           text: 'CRÉDITOS',
                           baseColor: Colors.blue.shade700,
-                          onPressed: () {},
+                          onPressed: () {
+                            Botones.mostrar(
+                              context,
+                              titulo: 'CRÉDITOS',
+                              contenido: const Text(
+                                'Desarrollado por:\nAntonio Barriola y Carlos Padron\n\nMotor: Flutter\n\n¡Gracias por jugar!',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 16,
+                                  height: 1.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -179,6 +321,33 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // Generador de mini botones para la interfaz interna de opciones
+  Widget _miniBotonRetro(
+    String texto,
+    VoidCallback accion, {
+    bool activo = false,
+  }) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: activo
+            ? Colors.cyan.shade700
+            : const Color(0xFF393E46),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4.0),
+          side: BorderSide(
+            color: activo ? Colors.white : const Color(0xFF11141A),
+            width: 2,
+          ),
+        ),
+        elevation: 2,
+      ),
+      onPressed: accion,
+      child: Text(texto, style: GoogleFonts.pressStart2p(fontSize: 10)),
     );
   }
 }
