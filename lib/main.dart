@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'Carga.dart';
+import 'botones.dart';
 
 void main() => runApp(const MyApp());
 
