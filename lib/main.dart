@@ -1,5 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:buscaminas/audios.dart';
+import 'package:buscaminas/persistencia.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -55,6 +56,7 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
   @override
   void initState() {
     super.initState();
+    _cargarPreferencias();
     _controller = VideoPlayerController.asset('assets/PantallaInicial.mp4');
     _controller.setVolume(0.0);
     _controller.initialize().then((_) {
@@ -66,6 +68,18 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
         });
       }
     });
+  }
+
+  Future<void> _cargarPreferencias() async {
+    bool sonido = await StorageManager.obtenerBool('sonido', true);
+    bool anims = await StorageManager.obtenerBool('animaciones', true);
+
+    setState(() {
+      _sonidoActivado = sonido;
+      _animacionesActivadas = anims;
+    });
+    // Sincroniza el AudioManager
+    AudioManager.setEstado(sonido);
   }
 
   @override
@@ -96,7 +110,6 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // ... (Tu lógica de video igual)
           if (_isInitialized)
             SizedBox.expand(
                 child: FittedBox(
@@ -109,7 +122,6 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                             child: VideoPlayer(_controller)))))
           else
             Container(color: Colors.black),
-
           SafeArea(
             child: Column(
               children: [
@@ -162,11 +174,9 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                                 temaInicial: _temaActual,
                                 onTemaChanged: (nuevoTema) =>
                                     setState(() => _temaActual = nuevoTema),
-                                animacionesActivadas:
-                                    _animacionesActivadas, // Ahora sí lo reconocerá
+                                animacionesActivadas: _animacionesActivadas,
                                 onAnimacionesChanged: (nuevoEstado) => setState(
-                                    () => _animacionesActivadas =
-                                        nuevoEstado), // Ahora sí lo reconocerá
+                                    () => _animacionesActivadas = nuevoEstado),
                                 contenido: StatefulBuilder(
                                   builder: (context, setDialogState) {
                                     final Color cT = _temaActual == 'oscuro'
@@ -183,16 +193,16 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                                             _sonidoActivado
                                                 ? 'ACTIVADOS'
                                                 : 'DESACTIVADOS', () {
-                                          AudioManager.playAsset(
-                                              'sonidos/generic1.ogg');
                                           setState(() => _sonidoActivado =
                                               !_sonidoActivado);
 
+                                          // Guardado persistente
+                                          StorageManager.guardarBool(
+                                              'sonido', _sonidoActivado);
                                           AudioManager.setEstado(
                                               _sonidoActivado);
 
-                                          setDialogState(
-                                              () {}); // Refresca el diálogo
+                                          setDialogState(() {});
                                         }, activo: _sonidoActivado),
 
                                         const SizedBox(height: 25),

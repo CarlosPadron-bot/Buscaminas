@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:buscaminas/audios.dart';
+import 'package:buscaminas/persistencia.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
@@ -20,8 +23,32 @@ class HighScoreScreen extends StatefulWidget {
   State<HighScoreScreen> createState() => _HighScoreScreenState();
 }
 
+Future<void> guardarHistorial() async {
+  List<Map<String, dynamic>> listaMap = historialPartidas
+      .map((p) => {
+            'fecha': p.fecha.toIso8601String(),
+            'segundos': p.segundos,
+            'intentos': p.intentos
+          })
+      .toList();
+
+  await StorageManager.guardarString('historial', jsonEncode(listaMap));
+}
+
+Future<void> cargarHistorial() async {
+  String? json = await StorageManager.obtenerString('historial');
+  if (json != null) {
+    List<dynamic> lista = jsonDecode(json);
+    historialPartidas = lista
+        .map((item) => Partida(
+            fecha: DateTime.parse(item['fecha']),
+            segundos: item['segundos'],
+            intentos: item['intentos']))
+        .toList();
+  }
+}
+
 class _HighScoreScreenState extends State<HighScoreScreen> {
-  // Función para borrar records con confirmación
   void _confirmarBorrar() {
     showDialog(
       context: context,
