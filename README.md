@@ -4,6 +4,9 @@ Micro Proyecto de Sistemas de informacióm, Creacion de un buscaminas en flutter
 Carlos Padron 31.785.756
 Antonio Barriola 31.985.434
 
+Este proyecto funciona tanto para los navegadores Chrome y Edge.
+
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
