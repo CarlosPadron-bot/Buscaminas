@@ -1,3 +1,4 @@
+import 'package:buscaminas/audios.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
@@ -9,6 +10,8 @@ class Botones extends StatefulWidget {
   final double anchoCerrar;
   final String temaInicial;
   final Function(String)? onTemaChanged;
+  final bool animacionesActivadas;
+  final Function(bool)? onAnimacionesChanged;
 
   const Botones({
     super.key,
@@ -17,6 +20,8 @@ class Botones extends StatefulWidget {
     this.anchoCerrar = 400,
     required this.temaInicial,
     this.onTemaChanged,
+    required this.animacionesActivadas,
+    required this.onAnimacionesChanged,
   });
 
   static void mostrar(
@@ -25,6 +30,8 @@ class Botones extends StatefulWidget {
     required String temaInicial,
     required Function(String) onTemaChanged,
     required Widget contenido,
+    required bool animacionesActivadas,
+    required Function(bool) onAnimacionesChanged,
   }) {
     showDialog(
       context: context,
@@ -36,6 +43,8 @@ class Botones extends StatefulWidget {
             temaInicial: temaInicial,
             onTemaChanged: onTemaChanged,
             contenidoDinamico: contenido,
+            animacionesActivadas: animacionesActivadas,
+            onAnimacionesChanged: onAnimacionesChanged,
           ),
         );
       },
@@ -47,11 +56,8 @@ class Botones extends StatefulWidget {
 }
 
 class BotonesState extends State<Botones> {
-  bool animacionesActivas = true;
-
   @override
   Widget build(BuildContext context) {
-    // Definimos los colores basados en el tema que viene de widget.temaInicial
     final bool esOscuro = widget.temaInicial == 'oscuro';
     final Color colorFondoMesa =
         esOscuro ? const Color(0xFF222831) : Colors.white;
@@ -62,8 +68,10 @@ class BotonesState extends State<Botones> {
         esOscuro ? Colors.black54 : Colors.grey.withOpacity(0.3);
 
     return BounceInUp(
-      duration: const Duration(milliseconds: 800),
-      from: 600,
+      duration: widget.animacionesActivadas
+          ? const Duration(milliseconds: 800)
+          : Duration.zero,
+      from: widget.animacionesActivadas ? 600 : 0,
       child: Container(
         width: 450,
         padding: const EdgeInsets.all(24.0),
@@ -104,6 +112,7 @@ class BotonesState extends State<Botones> {
                           ? Colors.cyan.shade600
                           : Colors.grey.shade700,
                       onPressed: () {
+                        AudioManager.playAsset('sonidos/generic1.ogg');
                         widget.onTemaChanged?.call('claro');
                         setState(() {});
                       },
@@ -115,6 +124,7 @@ class BotonesState extends State<Botones> {
                           ? Colors.cyan.shade600
                           : Colors.grey.shade700,
                       onPressed: () {
+                        AudioManager.playAsset('sonidos/generic1.ogg');
                         widget.onTemaChanged?.call('oscuro');
                         setState(() {});
                       },
@@ -122,24 +132,13 @@ class BotonesState extends State<Botones> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                buildEtiqueta('ANIMACIONES', colorTextoPrincipal),
-                const SizedBox(height: 10),
-                BotonMenuOpciones(
-                  texto: animacionesActivas ? 'ACTIVADAS' : 'DESACTIVADAS',
-                  colorBase: animacionesActivas
-                      ? Colors.green.shade700
-                      : Colors.red.shade900,
-                  ancho: 220,
-                  onPressed: () =>
-                      setState(() => animacionesActivas = !animacionesActivas),
-                ),
-                const SizedBox(height: 25),
                 BotonMenuOpciones(
                   texto: 'CLASIFICACIONES',
                   colorBase: const Color.fromARGB(255, 212, 151, 17),
                   ancho: 250,
                   fontSize: 10,
                   onPressed: () {
+                    AudioManager.playAsset('sonidos/resultados.wav');
                     Navigator.of(context).pop();
                     HighScoreScreen.mostrar(context);
                   },
@@ -147,11 +146,13 @@ class BotonesState extends State<Botones> {
               ],
               const SizedBox(height: 30),
               BotonMenuOpciones(
-                texto: 'CERRAR',
-                colorBase: Colors.red.shade700,
-                ancho: widget.anchoCerrar,
-                onPressed: () => Navigator.of(context).pop(),
-              ),
+                  texto: 'CERRAR',
+                  colorBase: Colors.red.shade700,
+                  ancho: widget.anchoCerrar,
+                  onPressed: () {
+                    AudioManager.playAsset('sonidos/cancel.ogg');
+                    Navigator.of(context).pop();
+                  }),
             ],
           ),
         ),

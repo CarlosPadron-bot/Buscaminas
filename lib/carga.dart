@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:buscaminas/Audios.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -76,7 +77,10 @@ class EstadoCarga extends State<CargaPantalla> {
     return false;
   }
 
-  void _navigateToHome() {
+  void _navigateToHome() async {
+    AudioManager.playAsset('sonidos/win.ogg');
+    await Future.delayed(const Duration(milliseconds: 500));
+
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const VideoBackgroundScreen()),

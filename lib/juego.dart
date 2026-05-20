@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:buscaminas/audios.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
@@ -36,9 +37,11 @@ class TableroJuego extends StatefulWidget {
 
 class _TableroJuegoState extends State<TableroJuego> {
   late BuscaminasLogica juego;
+  bool _ganoJuego = false;
   Timer? _timer;
   int _segundos = 0;
   int _intentos = 0;
+  bool _mostrarGameOver = false;
 
   @override
   void initState() {
@@ -52,9 +55,16 @@ class _TableroJuegoState extends State<TableroJuego> {
       columnas: widget.configuracion.columnas,
       totalMinas: widget.configuracion.minas,
     );
+
     _segundos = 0;
     _intentos = 0;
     _timer?.cancel();
+
+    setState(() {
+      _mostrarGameOver = false;
+      _ganoJuego = false;
+    });
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() => _segundos++);
@@ -62,11 +72,35 @@ class _TableroJuegoState extends State<TableroJuego> {
     });
   }
 
+  void _ganarJuego() {
+    _timer?.cancel();
+    _registrarPartida();
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _mostrarGameOver = true;
+          _ganoJuego = true;
+        });
+        AudioManager.playAsset('sonidos/ganaste.wav');
+      }
+    });
+  }
+
   void _perderJuego() {
     _timer?.cancel();
     _registrarPartida();
-    setState(() {
-      juego.juegoTerminado = true;
+
+    AudioManager.playAsset('sonidos/esplosion.wav');
+
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() {
+          _mostrarGameOver = true;
+          _ganoJuego = false;
+        });
+        AudioManager.playAsset('sonidos/gameover.mp3');
+      }
     });
   }
 
@@ -160,17 +194,28 @@ class _TableroJuegoState extends State<TableroJuego> {
 
                           return GestureDetector(
                             onTap: () {
-                              if (!juego.juegoTerminado) {
+                              if (!juego.juegoTerminado &&
+                                  !casilla.tieneBandera) {
+                                bool esBomba = juego.revelarCasilla(f, c);
+
                                 setState(() {
                                   _intentos++;
-                                  if (juego.revelarCasilla(f, c)) {
-                                    _perderJuego();
-                                  }
                                 });
+
+                                if (esBomba) {
+                                  _perderJuego();
+                                } else {
+                                  AudioManager.playAsset('sonidos/card1.ogg');
+
+                                  if (juego.verificarVictoria()) {
+                                    _ganarJuego();
+                                  }
+                                }
                               }
                             },
                             onSecondaryTap: () {
-                              if (!juego.juegoTerminado) {
+                              if (!juego.juegoTerminado && !casilla.revelada) {
+                                AudioManager.playAsset('sonidos/casilla.wav');
                                 setState(() => juego.alternarBandera(f, c));
                               }
                             },
@@ -196,7 +241,10 @@ class _TableroJuegoState extends State<TableroJuego> {
                     side: const BorderSide(color: Colors.black, width: 2),
                   ),
                 ),
-                onPressed: widget.onBack,
+                onPressed: () {
+                  AudioManager.playAsset('sonidos/cancel.ogg');
+                  widget.onBack();
+                },
                 child: Text(
                   'VOLVER AL MENÚ',
                   style: GoogleFonts.pressStart2p(
@@ -206,7 +254,7 @@ class _TableroJuegoState extends State<TableroJuego> {
             ),
           ],
         ),
-        if (juego.juegoTerminado) _buildGameOverOverlay(),
+        if (_mostrarGameOver) _buildGameOverOverlay(),
       ],
     );
   }
@@ -251,6 +299,9 @@ class _TableroJuegoState extends State<TableroJuego> {
   }
 
   Widget _buildGameOverOverlay() {
+    final String titulo = _ganoJuego ? 'GANASTE' : 'GAME OVER';
+    final Color colorTitulo = _ganoJuego ? Colors.yellow : Colors.red;
+
     return Container(
       color: Colors.black87,
       width: double.infinity,
@@ -258,29 +309,38 @@ class _TableroJuegoState extends State<TableroJuego> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ZoomIn(
-            child: Text('GAME OVER',
+            child: Text(titulo,
                 style:
-                    GoogleFonts.pressStart2p(color: Colors.red, fontSize: 40)),
+                    GoogleFonts.pressStart2p(color: colorTitulo, fontSize: 40)),
           ),
           const SizedBox(height: 40),
 
+          // Botón Ver Clasificación
           ElevatedButton(
             style:
                 ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade800),
-            onPressed: () =>
-                HighScoreScreen.mostrar(context, tiempo: _segundos),
+            onPressed: () {
+              AudioManager.playAsset('sonidos/resultados.wav');
+              HighScoreScreen.mostrar(context, tiempo: _segundos);
+            },
             child: Text('VER CLASIFICACIÓN',
                 style: GoogleFonts.pressStart2p(
                     fontSize: 10, color: Colors.white)),
           ),
-
           const SizedBox(height: 15),
 
           // Botón Reintentar
           ElevatedButton(
             style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF393E46)),
-            onPressed: () => setState(() => _iniciarJuego()),
+            onPressed: () {
+              AudioManager.playAsset('sonidos/intentar.wav');
+              setState(() {
+                _mostrarGameOver = false;
+                _ganoJuego = false;
+                _iniciarJuego();
+              });
+            },
             child: Text('REINTENTAR',
                 style: GoogleFonts.pressStart2p(
                     fontSize: 10, color: Colors.white)),
@@ -291,7 +351,10 @@ class _TableroJuegoState extends State<TableroJuego> {
           ElevatedButton(
             style:
                 ElevatedButton.styleFrom(backgroundColor: Colors.red.shade900),
-            onPressed: widget.onBack,
+            onPressed: () {
+              AudioManager.playAsset('sonidos/cancel.ogg');
+              widget.onBack();
+            },
             child: Text('VOLVER AL MENÚ',
                 style: GoogleFonts.pressStart2p(
                     fontSize: 10, color: Colors.white)),

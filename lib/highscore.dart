@@ -1,3 +1,4 @@
+import 'package:buscaminas/audios.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
@@ -33,13 +34,17 @@ class _HighScoreScreenState extends State<HighScoreScreen> {
                 GoogleFonts.pressStart2p(color: Colors.white70, fontSize: 8)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(), // NO
+            onPressed: () {
+              AudioManager.playAsset('sonidos/cancel.ogg');
+              Navigator.of(context).pop();
+            },
             child:
                 Text('NO', style: GoogleFonts.pressStart2p(color: Colors.red)),
           ),
           TextButton(
             onPressed: () {
               setState(() => historialPartidas.clear());
+              AudioManager.playAsset('sonidos/foil2.ogg');
               Navigator.of(context).pop();
             },
             child: Text('SÍ',
@@ -107,17 +112,21 @@ class _HighScoreScreenState extends State<HighScoreScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   BotonMenuOpciones(
-                    texto: 'VOLVER',
-                    colorBase: Colors.red.shade700,
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
+                      texto: 'VOLVER',
+                      colorBase: Colors.red.shade700,
+                      onPressed: () {
+                        AudioManager.playAsset('sonidos/cancel.ogg');
+                        Navigator.of(context).pop();
+                      }),
                   if (historialPartidas.isNotEmpty) ...[
                     const SizedBox(width: 20),
                     BotonMenuOpciones(
-                      texto: 'ELIMINAR',
-                      colorBase: Colors.grey.shade700,
-                      onPressed: _confirmarBorrar,
-                    ),
+                        texto: 'ELIMINAR',
+                        colorBase: Colors.grey.shade700,
+                        onPressed: () {
+                          AudioManager.playAsset('sonidos/foil2.ogg');
+                          _confirmarBorrar();
+                        }),
                   ]
                 ],
               ),

@@ -15,6 +15,7 @@ dependencies:
   google_fonts: ^6.2.0
   animate_do: ^3.1.2
   intl: ^0.20.2
+  audioplayers: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -28,3 +29,16 @@ flutter:
     - assets/PantallaInicial.mp4
     - assets/imagenes/Mina.png
     - assets/imagenes/Bomba.png
+    - assets/sonidos/win.ogg
+    - assets/sonidos/cancel.ogg
+    - assets/sonidos/foil2.ogg
+    - assets/sonidos/intentar.wav
+    - assets/sonidos/resultados.wav
+    - assets/sonidos/generic1.ogg
+    - assets/sonidos/card1.ogg
+    - assets/sonidos/casilla.wav
+    - assets/sonidos/esplosion.wav
+    - assets/sonidos/gameover.mp3
+    - assets/sonidos/ganaste.wav
+    - assets/imagenes/titulo.png
+

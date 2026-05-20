@@ -1,4 +1,5 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:buscaminas/audios.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,10 +34,23 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
   bool _sonidoActivado = true;
+  bool _animacionesActivadas = true;
 
   String _dificultad = 'MEDIO';
   bool _jugando = false;
   String _temaActual = 'oscuro';
+
+  Widget construirAnimacion(Widget child, {bool esBounce = false}) {
+    if (!_animacionesActivadas) {
+      return child;
+    }
+    return esBounce
+        ? BounceInUp(
+            duration: const Duration(milliseconds: 2000),
+            from: 600,
+            child: child)
+        : FadeInDown(duration: const Duration(seconds: 2), child: child);
+  }
 
   @override
   void initState() {
@@ -82,67 +96,47 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          // ... (Tu lógica de video igual)
           if (_isInitialized)
             SizedBox.expand(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _controller.value.size.width,
-                  height: _controller.value.size.height,
-                  child: AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
-                  ),
-                ),
-              ),
-            )
+                child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                        width: _controller.value.size.width,
+                        height: _controller.value.size.height,
+                        child: AspectRatio(
+                            aspectRatio: _controller.value.aspectRatio,
+                            child: VideoPlayer(_controller)))))
           else
             Container(color: Colors.black),
+
           SafeArea(
             child: Column(
               children: [
                 Expanded(
                   flex: _jugando ? 1 : 2,
                   child: Center(
-                    child: FadeInDown(
-                      child: Text('BUSCAMINAS',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.pressStart2p(
-                              color: colorTexto,
-                              fontSize: _jugando ? 30 : 50,
-                              shadows: esOscuro
-                                  ? [
-                                      const Shadow(
-                                          blurRadius: 15.0,
-                                          color: Colors.black,
-                                          offset: Offset(3.0, 3.0))
-                                    ]
-                                  : null)),
+                    child: construirAnimacion(
+                      Image.asset(
+                        'assets/imagenes/titulo.png',
+                        height: _jugando ? 200 : 260,
+                        fit: BoxFit.contain,
+                      ),
+                      esBounce: false,
                     ),
                   ),
                 ),
                 if (!_jugando)
-                  BounceInUp(
-                    duration: const Duration(milliseconds: 900),
-                    delay: const Duration(seconds: 1),
-                    from: 400,
-                    child: Container(
+                  construirAnimacion(
+                    Container(
                       margin: const EdgeInsets.only(
                           bottom: 50.0, left: 10.0, right: 10.0),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12.0, vertical: 22.0),
                       decoration: BoxDecoration(
-                        color: colorInterfaz,
-                        borderRadius: BorderRadius.circular(12.0),
-                        border: Border.all(color: colorBorde, width: 4),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black54,
-                            blurRadius: 10,
-                            offset: Offset(0, 5),
-                          ),
-                        ],
-                      ),
+                          color: colorInterfaz,
+                          borderRadius: BorderRadius.circular(12.0),
+                          border: Border.all(color: colorBorde, width: 4)),
                       child: Wrap(
                         spacing: 12,
                         runSpacing: 12,
@@ -151,69 +145,106 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                           PixelButton(
                             text: 'JUGAR',
                             baseColor: Colors.green.shade600,
-                            onPressed: () => setState(() => _jugando = true),
+                            onPressed: () {
+                              AudioManager.playAsset('sonidos/generic1.ogg');
+
+                              setState(() => _jugando = true);
+                            },
                           ),
                           PixelButton(
                             text: 'OPCIONES',
                             baseColor: const Color.fromARGB(255, 179, 154, 113),
                             onPressed: () {
+                              AudioManager.playAsset('sonidos/generic1.ogg');
                               Botones.mostrar(
                                 context,
                                 titulo: 'OPCIONES',
                                 temaInicial: _temaActual,
-                                onTemaChanged: (nuevoTema) {
-                                  setState(() => _temaActual = nuevoTema);
-                                },
+                                onTemaChanged: (nuevoTema) =>
+                                    setState(() => _temaActual = nuevoTema),
+                                animacionesActivadas:
+                                    _animacionesActivadas, // Ahora sí lo reconocerá
+                                onAnimacionesChanged: (nuevoEstado) => setState(
+                                    () => _animacionesActivadas =
+                                        nuevoEstado), // Ahora sí lo reconocerá
                                 contenido: StatefulBuilder(
                                   builder: (context, setDialogState) {
-                                    final bool esOscuro =
-                                        _temaActual == 'oscuro';
-                                    final Color colorTexto =
-                                        esOscuro ? Colors.white : Colors.black;
-                                    final Color colorFondo = esOscuro
-                                        ? const Color(0xFF222831)
-                                        : Colors.white;
-
+                                    final Color cT = _temaActual == 'oscuro'
+                                        ? Colors.white
+                                        : Colors.black;
                                     return Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text('EFECTOS DE SONIDO',
                                             style: GoogleFonts.pressStart2p(
-                                                color: colorTexto,
-                                                fontSize: 10)),
+                                                color: cT, fontSize: 10)),
                                         const SizedBox(height: 10),
                                         _miniBotonRetro(
-                                          _sonidoActivado
-                                              ? 'ACTIVADOS'
-                                              : 'DESACTIVADOS',
+                                            _sonidoActivado
+                                                ? 'ACTIVADOS'
+                                                : 'DESACTIVADOS', () {
+                                          AudioManager.playAsset(
+                                              'sonidos/generic1.ogg');
+                                          setState(() => _sonidoActivado =
+                                              !_sonidoActivado);
+
+                                          AudioManager.setEstado(
+                                              _sonidoActivado);
+
+                                          setDialogState(
+                                              () {}); // Refresca el diálogo
+                                        }, activo: _sonidoActivado),
+
+                                        const SizedBox(height: 25),
+
+                                        Text('ANIMACIONES',
+                                            style: GoogleFonts.pressStart2p(
+                                                color: cT, fontSize: 10)),
+                                        const SizedBox(height: 10),
+                                        _miniBotonRetro(
+                                          _animacionesActivadas
+                                              ? 'ACTIVADAS'
+                                              : 'DESACTIVADAS',
                                           () {
-                                            setState(() => _sonidoActivado =
-                                                !_sonidoActivado);
+                                            AudioManager.playAsset(
+                                                'sonidos/generic1.ogg');
+                                            setState(() =>
+                                                _animacionesActivadas =
+                                                    !_animacionesActivadas);
                                             setDialogState(() {});
                                           },
-                                          activo: _sonidoActivado,
+                                          activo: _animacionesActivadas,
                                         ),
+
                                         const SizedBox(height: 25),
+
+                                        // 3. Dificultad
                                         Text('DIFICULTAD',
                                             style: GoogleFonts.pressStart2p(
-                                                color: colorTexto,
-                                                fontSize: 12)),
+                                                color: cT, fontSize: 12)),
                                         const SizedBox(height: 12),
                                         Wrap(
                                           spacing: 10,
+                                          runSpacing: 10,
                                           alignment: WrapAlignment.center,
                                           children: [
                                             _miniBotonRetro('FÁCIL', () {
+                                              AudioManager.playAsset(
+                                                  'sonidos/generic1.ogg');
                                               setState(
                                                   () => _dificultad = 'FÁCIL');
                                               setDialogState(() {});
                                             }, activo: _dificultad == 'FÁCIL'),
                                             _miniBotonRetro('MEDIO', () {
+                                              AudioManager.playAsset(
+                                                  'sonidos/generic1.ogg');
                                               setState(
                                                   () => _dificultad = 'MEDIO');
                                               setDialogState(() {});
                                             }, activo: _dificultad == 'MEDIO'),
                                             _miniBotonRetro('DIFÍCIL', () {
+                                              AudioManager.playAsset(
+                                                  'sonidos/generic1.ogg');
                                               setState(() =>
                                                   _dificultad = 'DIFÍCIL');
                                               setDialogState(() {});
@@ -232,45 +263,57 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
                           PixelButton(
                             text: 'INSTRUCCIONES',
                             baseColor: Colors.amber.shade700,
-                            onPressed: () => Botones.mostrar(
-                              context,
-                              titulo: 'INSTRUCCIONES',
-                              temaInicial: _temaActual,
-                              onTemaChanged: (t) {},
-                              contenido: const Text(
-                                'Click Izq: Descubrir casilla\nClick Der: Colocar bandera\n\n¡Evita las minas para ganar!\n\nLos números indican cuántas minas hay a su alrededor.',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
+                            onPressed: () {
+                              AudioManager.playAsset('sonidos/generic1.ogg');
+
+                              Botones.mostrar(
+                                context,
+                                titulo: 'INSTRUCCIONES',
+                                temaInicial: _temaActual,
+                                onTemaChanged: (t) {},
+                                animacionesActivadas: _animacionesActivadas,
+                                onAnimacionesChanged: (nuevoEstado) => setState(
+                                    () => _animacionesActivadas = nuevoEstado),
+                                contenido: const Text(
+                                  'Click Izq: Descubrir casilla\nClick Der: Colocar bandera\n\n¡Evita las minas para ganar!\n\nLos números indican cuántas minas hay a su alrededor.',
+                                  textAlign: TextAlign.center,
+                                ),
+                              );
+                            },
                           ),
                           PixelButton(
                             text: 'CRÉDITOS',
                             baseColor: Colors.blue.shade700,
-                            onPressed: () => Botones.mostrar(
-                              context,
-                              titulo: 'CRÉDITOS',
-                              temaInicial: _temaActual,
-                              onTemaChanged: (t) {},
-                              contenido: const Text(
-                                'Desarrollado por:\nAntonio Barriola y Carlos Padron\n\nMotor: Flutter\n\n!Gracias por Jugar¡',
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
+                            onPressed: () {
+                              AudioManager.playAsset('sonidos/generic1.ogg');
+
+                              Botones.mostrar(
+                                context,
+                                titulo: 'CRÉDITOS',
+                                temaInicial: _temaActual,
+                                onTemaChanged: (t) {},
+                                animacionesActivadas: _animacionesActivadas,
+                                onAnimacionesChanged: (nuevoEstado) => setState(
+                                    () => _animacionesActivadas = nuevoEstado),
+                                contenido: const Text(
+                                  'Desarrollado por:\nAntonio Barriola y Carlos Padron\n\nMotor: Flutter\n\n!Gracias por Jugar¡',
+                                  textAlign: TextAlign.center,
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
                     ),
-                  )
-                else
-                  // Pantalla de Juego
-                  Expanded(
-                    flex: 5,
-                    child: TableroJuego(
-                      configuracion: _obtenerConfiguracion(),
-                      temaActual: _temaActual,
-                      onBack: () => setState(() => _jugando = false),
-                    ),
+                    esBounce: true,
                   ),
+                if (_jugando)
+                  Expanded(
+                      flex: 5,
+                      child: TableroJuego(
+                          configuracion: _obtenerConfiguracion(),
+                          temaActual: _temaActual,
+                          onBack: () => setState(() => _jugando = false))),
               ],
             ),
           ),
@@ -282,9 +325,9 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
   Widget _miniBotonRetro(String texto, VoidCallback accion,
       {bool activo = false}) {
     Color colorFondo;
-    if (texto == 'ACTIVADOS') {
+    if (texto == 'ACTIVADAS' || texto == 'ACTIVADOS') {
       colorFondo = Colors.green.shade700;
-    } else if (texto == 'DESACTIVADOS') {
+    } else if (texto == 'DESACTIVADAS' || texto == 'DESACTIVADOS') {
       colorFondo = Colors.red.shade900;
     } else {
       colorFondo = activo ? Colors.cyan.shade700 : const Color(0xFF393E46);
@@ -298,9 +341,7 @@ class _VideoBackgroundScreenState extends State<VideoBackgroundScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(4.0),
           side: BorderSide(
-            color: activo ? Colors.white : const Color(0xFF11141A),
-            width: 2,
-          ),
+              color: activo ? Colors.white : const Color(0xFF11141A), width: 2),
         ),
       ),
       onPressed: accion,

@@ -66,6 +66,21 @@ class BuscaminasLogica {
     return count;
   }
 
+  bool verificarVictoria() {
+    for (int f = 0; f < filas; f++) {
+      for (int c = 0; c < columnas; c++) {
+        // Si la casilla no tiene bomba y NO está revelada, aún no ganamos
+        if (!tablero[f][c].tieneBomba && !tablero[f][c].revelada) {
+          return false;
+        }
+      }
+    }
+    // Si terminamos el ciclo y todo lo que no es bomba está revelado, ganamos
+    victoria = true;
+    juegoTerminado = true;
+    return true;
+  }
+
   bool revelarCasilla(int f, int c) {
     if (juegoTerminado ||
         tablero[f][c].revelada ||
