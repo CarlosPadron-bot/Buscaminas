@@ -103,7 +103,6 @@ class EstadoCarga extends State<CargaPantalla> {
                 ),
               ),
               const SizedBox(height: 50),
-
               Transform.rotate(
                 angle: anguloActual,
                 child: Image.asset(
@@ -114,7 +113,6 @@ class EstadoCarga extends State<CargaPantalla> {
                 ),
               ),
               const SizedBox(height: 60),
-
               Container(
                 width: 250,
                 height: 20,
@@ -136,7 +134,6 @@ class EstadoCarga extends State<CargaPantalla> {
                 ),
               ),
               const SizedBox(height: 20),
-
               Text(
                 'Omitir (Espacio)',
                 style: GoogleFonts.pressStart2p(

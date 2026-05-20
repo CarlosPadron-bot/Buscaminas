@@ -2,16 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animate_do/animate_do.dart';
 import 'botones.dart';
+import 'package:intl/intl.dart';
+import 'historial.dart';
 
-class HighScoreScreen extends StatelessWidget {
+class HighScoreScreen extends StatefulWidget {
   const HighScoreScreen({super.key});
 
-  static void mostrar(BuildContext context) {
+  static void mostrar(BuildContext context, {int? tiempo}) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return const HighScoreScreen();
-      },
+      builder: (BuildContext context) => const HighScoreScreen(),
+    );
+  }
+
+  @override
+  State<HighScoreScreen> createState() => _HighScoreScreenState();
+}
+
+class _HighScoreScreenState extends State<HighScoreScreen> {
+  // Función para borrar records con confirmación
+  void _confirmarBorrar() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF222831),
+        title: Text('¿Estás seguro?',
+            style: GoogleFonts.pressStart2p(color: Colors.white, fontSize: 12)),
+        content: Text('Se borrarán todos los records.',
+            style:
+                GoogleFonts.pressStart2p(color: Colors.white70, fontSize: 8)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(), // NO
+            child:
+                Text('NO', style: GoogleFonts.pressStart2p(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() => historialPartidas.clear());
+              Navigator.of(context).pop();
+            },
+            child: Text('SÍ',
+                style: GoogleFonts.pressStart2p(color: Colors.green)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -21,63 +56,70 @@ class HighScoreScreen extends StatelessWidget {
       backgroundColor: Colors.transparent,
       child: BounceInUp(
         duration: const Duration(milliseconds: 800),
-        from: 600,
         child: Container(
           width: 600,
-          padding: const EdgeInsets.all(30.0),
+          height: 500,
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: const Color(0xFF222831),
-            borderRadius: BorderRadius.circular(12.0),
-            border: Border.all(color: const Color(0xFF11141A), width: 4),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black54,
-                blurRadius: 15,
-                offset: Offset(0, 8),
-              ),
-            ],
-          ),
+              color: const Color(0xFF222831),
+              borderRadius: BorderRadius.circular(12)),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'CLASIFICACIONES',
-                style: GoogleFonts.pressStart2p(
-                  color: Colors.amber.shade600,
-                  fontSize: 20,
-                  shadows: const [
-                    Shadow(
-                      blurRadius: 5.0,
-                      color: Colors.black,
-                      offset: Offset(2.0, 2.0),
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Todavía no hay records disponibles, ¡juega una partida y supera tus records!',
+              Text('HISTORIAL',
                   style: GoogleFonts.pressStart2p(
-                    color: Colors.white70,
-                    fontSize: 10,
-                    height: 2.0,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                      color: Colors.amber, fontSize: 18)),
+              const SizedBox(height: 20),
+              Expanded(
+                child: historialPartidas.isEmpty
+                    ? Center(
+                        child: Text(
+                            'No hay partidas registradas,\n ¡Juega tu primero partida!',
+                            style: GoogleFonts.pressStart2p(
+                                color: Colors.white38, fontSize: 10)))
+                    : ListView.builder(
+                        itemCount: historialPartidas.length,
+                        itemBuilder: (context, index) {
+                          final p = historialPartidas[index];
+                          return Container(
+                            margin: const EdgeInsets.symmetric(vertical: 5),
+                            padding: const EdgeInsets.all(10),
+                            color: Colors.white10,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(DateFormat('dd/MM HH:mm').format(p.fecha),
+                                    style: GoogleFonts.pressStart2p(
+                                        fontSize: 8, color: Colors.white)),
+                                Text('${p.segundos}s',
+                                    style: GoogleFonts.pressStart2p(
+                                        fontSize: 8, color: Colors.blue)),
+                                Text('${p.intentos} Intentos',
+                                    style: GoogleFonts.pressStart2p(
+                                        fontSize: 8, color: Colors.green)),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
               ),
-
-              const SizedBox(height: 50),
-
-              BotonMenuOpciones(
-                texto: 'VOLVER',
-                colorBase: Colors.red.shade700,
-                ancho: 200,
-                fontSize: 12,
-                onPressed: () => Navigator.of(context).pop(),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  BotonMenuOpciones(
+                    texto: 'VOLVER',
+                    colorBase: Colors.red.shade700,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  if (historialPartidas.isNotEmpty) ...[
+                    const SizedBox(width: 20),
+                    BotonMenuOpciones(
+                      texto: 'ELIMINAR',
+                      colorBase: Colors.grey.shade700,
+                      onPressed: _confirmarBorrar,
+                    ),
+                  ]
+                ],
               ),
             ],
           ),
